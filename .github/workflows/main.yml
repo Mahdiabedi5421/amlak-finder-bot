@@ -1,0 +1,27 @@
+name: ربات یابنده املاک
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: دریافت فایل‌های پروژه
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: نصب کتابخانه‌ها
+        run: pip install -r requirements.txt
+
+      - name: اجرای ربات
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: python bot.py
