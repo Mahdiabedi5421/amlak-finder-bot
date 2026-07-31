@@ -1,28 +1,31 @@
 name: ربات یابنده املاک
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *"
+workflow_dispatch:
+schedule:
+- cron: "0 6 * * *"
 
 jobs:
-  run-bot:
-    runs-on: ubuntu-latest
+run-bot:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: دریافت فایل‌های پروژه
-        uses: actions/checkout@v4
+steps:
+  - name: دریافت فایل‌های پروژه
+    uses: actions/checkout@v4
 
-      - name: نصب پایتون
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+  - name: نصب پایتون
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.11"
 
-      - name: نصب کتابخانه‌ها
-        run: pip install -r requirements.txt
+  - name: نصب کتابخانه‌ها
+    run: pip install -r requirements.txt
 
-      - name: اجرای ربات
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          DIVAR_API_KEY: ${{ secrets.DIVAR_API_KEY }}
-        run: python bot.py
+  - name: تست اتصال به دیوار
+    run: python test_divar.py
+
+  - name: اجرای ربات
+    env:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      DIVAR_API_KEY: ${{ secrets.DIVAR_API_KEY }}
+    run: python bot.py
