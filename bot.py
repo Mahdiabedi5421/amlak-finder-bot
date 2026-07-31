@@ -9,7 +9,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 
 SELL_URL = "https://divar.ir/s/isfahan/buy-apartment"
 
-لینک اجاره منطقه ۷
+# لینک اجاره منطقه ۷
 
 RENT_URL = "https://divar.ir/s/isfahan/rent-residential/shahrak-milad?business-type=personal%2C&districts=1443%2C1444%2C1446%2C1467%2C1605%2C1606%2C2387&map_bbox=51.652939%2C32.650398%2C51.721099%2C32.735992&map_place_hash=4%7C1442%2C1443%2C1444%2C1446%2C1467%2C1605%2C1606%2C2387%7Capartment-sell%7C"
 
