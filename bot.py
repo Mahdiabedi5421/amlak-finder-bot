@@ -1,8 +1,10 @@
 import os
+import requests
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
 TOKEN = os.getenv("BOT_TOKEN")
+DIVAR_API_KEY = os.getenv("DIVAR_API_KEY")
 
 AREAS = [
     "برازنده", "اشراق", "آل محمد", "هسا",
@@ -11,13 +13,10 @@ AREAS = [
 ]
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        ["🏠 فروش", "🏠 اجاره"]
-    ]
+    keyboard = [["🏠 فروش", "🏠 اجاره"]]
 
     await update.message.reply_text(
-        "سلام 👋\n"
-        "به ربات یابنده املاک خوش آمدی.\n\n"
+        "🏠 ربات یابنده املاک\n\n"
         "نوع فایل را انتخاب کن:",
         reply_markup=ReplyKeyboardMarkup(
             keyboard,
@@ -41,7 +40,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text(
             f"نوع فایل: {context.user_data['type']}\n\n"
-            "حالا محدوده را انتخاب کن:",
+            "محدوده را انتخاب کن:",
             reply_markup=ReplyKeyboardMarkup(
                 keyboard,
                 resize_keyboard=True
@@ -52,10 +51,18 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         file_type = context.user_data.get("type", "فروش")
 
         await update.message.reply_text(
-            f"✅ انتخاب شد\n\n"
-            f"نوع فایل: {file_type}\n"
-            f"محدوده: {text}\n\n"
-            "🔎 بخش دریافت آگهی‌ها در مرحله بعد به این قسمت متصل می‌شود."
+            f"🔎 در حال جست‌وجوی آگهی‌های {file_type} در محدوده {text}..."
+        )
+
+        if not DIVAR_API_KEY:
+            await update.message.reply_text(
+                "❌ کلید API دیوار در تنظیمات ربات پیدا نشد."
+            )
+            return
+
+        await update.message.reply_text(
+            "✅ کلید API پیدا شد.\n\n"
+            "مرحله اتصال به سرویس جست‌وجوی دیوار آماده است."
         )
 
     else:
@@ -72,7 +79,10 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            message_handler
+        )
     )
 
     print("ربات اجرا شد...")
