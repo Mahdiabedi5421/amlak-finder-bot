@@ -1,15 +1,10 @@
 import os
-import requests
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-لینک فروش دیوار - بدون فیلتر محله
-
 SELL_URL = "https://divar.ir/s/isfahan/buy-apartment"
-
-# لینک اجاره منطقه ۷
 
 RENT_URL = "https://divar.ir/s/isfahan/rent-residential/shahrak-milad?business-type=personal%2C&districts=1443%2C1444%2C1446%2C1467%2C1605%2C1606%2C2387&map_bbox=51.652939%2C32.650398%2C51.721099%2C32.735992&map_place_hash=4%7C1442%2C1443%2C1444%2C1446%2C1467%2C1605%2C1606%2C2387%7Capartment-sell%7C"
 
@@ -26,9 +21,7 @@ resize_keyboard=True
 
 def back_keyboard():
 return ReplyKeyboardMarkup(
-[
-["↩️ برگشت"]
-],
+[["↩️ برگشت"]],
 resize_keyboard=True
 )
 
@@ -44,7 +37,6 @@ await update.message.reply_text(
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 text = update.message.text
 
-# برگشت به منوی اصلی
 if text == "↩️ برگشت":
     context.user_data.clear()
 
@@ -55,10 +47,7 @@ if text == "↩️ برگشت":
     )
     return
 
-# فروش
 if text == "🏠 فروش":
-    context.user_data["search_type"] = "فروش"
-
     await update.message.reply_text(
         "🏠 فایل‌های فروش\n\n"
         "برای مشاهده آگهی‌های فروش روی لینک زیر بزن:\n\n"
@@ -67,10 +56,7 @@ if text == "🏠 فروش":
     )
     return
 
-# اجاره منطقه ۷
 if text == "🏠 اجاره منطقه ۷":
-    context.user_data["search_type"] = "اجاره منطقه ۷"
-
     await update.message.reply_text(
         "🏠 رهن و اجاره منطقه ۷\n\n"
         "برای مشاهده آگهی‌های اجاره روی لینک زیر بزن:\n\n"
@@ -79,7 +65,6 @@ if text == "🏠 اجاره منطقه ۷":
     )
     return
 
-# تماس و پشتیبانی
 if text == "📞 تماس و پشتیبانی":
     await update.message.reply_text(
         "📞 تماس و پشتیبانی\n\n"
