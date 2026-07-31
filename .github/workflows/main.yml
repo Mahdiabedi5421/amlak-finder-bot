@@ -24,4 +24,5 @@ jobs:
       - name: اجرای ربات
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          DIVAR_API_KEY: ${{ secrets.DIVAR_API_KEY }}
         run: python bot.py
