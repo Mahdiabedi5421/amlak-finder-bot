@@ -1,87 +1,83 @@
 import os
-import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
-TOKEN = os.getenv("BOT_TOKEN", "PASTE_YOUR_BOT_TOKEN_HERE")
+TOKEN = os.getenv("BOT_TOKEN")
 
 AREAS = [
-    "برازنده", "اشراق", "آل محمد", "هسا", "کاوه", "غرضی",
-    "شاهپسند", "ابوریحان", "گلستان", "شهرک کاوه", "آل یاسین"
+    "برازنده", "اشراق", "آل محمد", "هسا",
+    "کاوه", "غرضی", "شاهپسند", "ابوریحان",
+    "گلستان", "شهرک کاوه", "آل یاسین"
 ]
 
-def main_menu():
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🏠 فایل‌های فروش", callback_data="sale")],
-        [InlineKeyboardButton("🔑 فایل‌های اجاره", callback_data="rent")],
-        [InlineKeyboardButton("🆕 فایل‌های جدید امروز", callback_data="new")],
-    ])
-
-def area_menu(kind):
-    buttons = []
-    for i in range(0, len(AREAS), 2):
-        row = []
-        for area in AREAS[i:i+2]:
-            row.append(InlineKeyboardButton(area, callback_data=f"{kind}:area:{area}"))
-        buttons.append(row)
-    buttons.append([InlineKeyboardButton("⬅️ برگشت", callback_data="home")])
-    return InlineKeyboardMarkup(buttons)
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        ["🏠 فروش", "🏠 اجاره"]
+    ]
+
     await update.message.reply_text(
-        "🏠 ربات فایل‌یاب املاک\n\nنوع فایل را انتخاب کن:",
-        reply_markup=main_menu()
+        "سلام 👋\n"
+        "به ربات یابنده املاک خوش آمدی.\n\n"
+        "نوع فایل را انتخاب کن:",
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard,
+            resize_keyboard=True
+        )
     )
 
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    data = query.data
 
-    if data == "home":
-        await query.edit_message_text(
-            "🏠 ربات فایل‌یاب املاک\n\nنوع فایل را انتخاب کن:",
-            reply_markup=main_menu()
-        )
-        return
+async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
 
-    if data in ("sale", "rent"):
-        title = "فروش" if data == "sale" else "اجاره"
-        await query.edit_message_text(
-            f"📌 فایل‌های {title}\n\nمحدوده را انتخاب کن:",
-            reply_markup=area_menu(data)
-        )
-        return
+    if text in ["🏠 فروش", "🏠 اجاره"]:
+        context.user_data["type"] = "فروش" if text == "🏠 فروش" else "اجاره"
 
-    if data == "new":
-        await query.edit_message_text(
-            "🆕 فایل‌های جدید امروز\n\n"
-            "این بخش در مرحله بعد به جمع‌آوری آگهی‌های واقعی وصل می‌شود.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅️ برگشت", callback_data="home")]
-            ])
-        )
-        return
+        keyboard = [
+            ["برازنده", "اشراق", "آل محمد"],
+            ["هسا", "کاوه", "غرضی"],
+            ["شاهپسند", "ابوریحان", "گلستان"],
+            ["شهرک کاوه", "آل یاسین"]
+        ]
 
-    if ":area:" in data:
-        kind, _, area = data.partition(":area:")
-        title = "فروش" if kind == "sale" else "اجاره"
-        await query.edit_message_text(
-            f"📍 {area}\n🏷 نوع: {title}\n\n"
-            "هنوز منبع آگهی‌ها وصل نشده است.\n"
-            "در مرحله بعد، جمع‌آوری مجاز اطلاعات عمومی آگهی‌ها و ذخیره فایل‌ها به این قسمت متصل می‌شود.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅️ برگشت به نوع فایل", callback_data=kind)],
-                [InlineKeyboardButton("🏠 منوی اصلی", callback_data="home")]
-            ])
+        await update.message.reply_text(
+            f"نوع فایل: {context.user_data['type']}\n\n"
+            "حالا محدوده را انتخاب کن:",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard,
+                resize_keyboard=True
+            )
         )
 
-def run():
-    logging.basicConfig(level=logging.INFO)
+    elif text in AREAS:
+        file_type = context.user_data.get("type", "فروش")
+
+        await update.message.reply_text(
+            f"✅ انتخاب شد\n\n"
+            f"نوع فایل: {file_type}\n"
+            f"محدوده: {text}\n\n"
+            "🔎 بخش دریافت آگهی‌ها در مرحله بعد به این قسمت متصل می‌شود."
+        )
+
+    else:
+        await update.message.reply_text(
+            "لطفاً یکی از گزینه‌های منو را انتخاب کن."
+        )
+
+
+def main():
+    if not TOKEN:
+        raise RuntimeError("BOT_TOKEN تنظیم نشده است.")
+
     app = Application.builder().token(TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)
+    )
+
+    print("ربات اجرا شد...")
     app.run_polling()
 
+
 if __name__ == "__main__":
-    run()
+    main()
